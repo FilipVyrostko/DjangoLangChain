@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if pdf_path %}
+    <div>
+    <embed src="{{ pdf_path }}" type="application/pdf" width="50%" height="600px">
+    </div>    
+    {% endif %}
+
+    <form method="POST">
+    {% csrf_token %}
+        {{form}}
+    <button type="submit"> Ask! </button>
+    </form>
+
+    {% if llm_response %}
+    
+        <p> AI: {{ llm_response }} </p>
+    
+    {% endif %}
+
+{% endblock content %}
+
+
+

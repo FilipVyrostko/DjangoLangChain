@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<h1> {{ pdf.pdf_id }} </h1>
+<br>
+<a href="{% url "delete_document" %}?pdf_id={{pdf.pdf_id}}">Delete Document</a>
+<br>
+<a href="{% url "chat_view" %}?pdf_id={{pdf.pdf_id}}">Chat</a>
+
+{% endblock content %}

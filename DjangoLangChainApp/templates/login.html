@@ -1,0 +1,10 @@
+{% block content %}
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <button class="btn btn-primary" type="submit">Sign In</button>
+</form>
+
+{% endblock content %}
+
