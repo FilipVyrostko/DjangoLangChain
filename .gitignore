@@ -1,6 +1,6 @@
 # Django ignores
 .env
-pdfs
+pdfs/*.pdf
 db.sqlite3
 migrations
 *.log
