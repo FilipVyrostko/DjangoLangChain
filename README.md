@@ -10,4 +10,9 @@ At the moment the chat is simple and does not support continuous conversations. 
 
 
 Special thanks to Udemy for offering great LangChain course that got me into this.
+
+
+Example:
+
     
+![Screenshot from 2024-03-25 20-49-59](https://github.com/FilipVyrostko/DjangoLangChain/assets/77462803/b1239f22-a941-47f7-b8bc-392e8b067a8e)
