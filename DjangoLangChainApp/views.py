@@ -7,7 +7,7 @@ from .forms import LinkUploadForm, QueryForm
 from .chat.pinecone.vector_store import add_documents_from_pdf
 from .models import PdfFile
 from .chat.model.chat import build_chat
-import validators, pdfkit, uuid, os
+import validators, pdfkit, uuid
 
 
 def index(request):
@@ -154,10 +154,6 @@ def upload_link(request):
                       template_name='upload_link.html',
                       context={'form': LinkUploadForm()})
     
-    # 1. Validate URL
-    # 2. Convert to PDF
-    # 3. Save to Pinecone
-    # 4. Save PDF entry to Django db
     if request.method == "POST":
         form = LinkUploadForm(request.POST)
         """
@@ -289,18 +285,18 @@ def chat_view(request):
         pdf_path = f"pdfs/{pdf_id}.pdf"
 
         # Invoke the chat LLM and get the response
-        llm_response = ""
+        llm_response = [request.POST.get('querry')]
         if form.is_valid():
             chat = build_chat(pdf_id)
             reply = chat.invoke({"input": form.cleaned_data['querry']})
-            llm_response = reply["answer"]
+            llm_response.append(reply["answer"])
 
         # Render the chat_view.html template with the form and response
-        return render(request, 
-                      template_name='chat_view.html', 
-                      context={"pdf_path": pdf_path,
-                               "llm_response": llm_response, 
-                               "form": form})
+        return render(request=request,
+                      template_name="chat_view.html", 
+                      context={"pdf_path": pdf_path, 
+                               "form": form, 
+                               "llm_response": llm_response})
 
 
 

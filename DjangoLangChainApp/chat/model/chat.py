@@ -7,7 +7,7 @@ from langchain import hub
 
 def build_chat(pdf_id):
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(streaming=True)
     retriever = get_retriever(pdf_id)
     combine_docs_chain = create_stuff_documents_chain(
         llm, retrieval_qa_chat_prompt

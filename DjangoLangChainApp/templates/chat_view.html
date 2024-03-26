@@ -16,8 +16,16 @@
 
     {% if llm_response %}
     
-        <p> AI: {{ llm_response }} </p>
-    
+        {% for response in llm_response  %}
+        
+            {% if forloop.counter|divisibleby:2 %}
+                AI: {{ response }}
+            {% else %}
+                User: {{ response }}
+            {% endif %}
+            <br>
+        
+        {% endfor %}
     {% endif %}
 
 {% endblock content %}
