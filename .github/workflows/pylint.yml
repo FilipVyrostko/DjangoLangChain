@@ -8,6 +8,10 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
+
+    env:
+      # Add random django secret key
+      DJANGO_SECRET_KEY: fl5doj2_7_$%b+l#cm)jrs^3$0d+iileem2yegjxv@)-gld$kw 
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
