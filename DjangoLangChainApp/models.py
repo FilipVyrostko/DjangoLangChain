@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .chat.pinecone.vector_store import pinecone_index
+import os
 
 class PdfFile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -11,6 +12,8 @@ class PdfFile(models.Model):
     def delete(self, *args, **kwargs):
         # Delete pinecone vectors
         pinecone_index.delete(ids=self.pinecone_id_list)
+        # Delete from local storage
+        os.remove(f"pdfs/{self.pdf_id}.pdf")
         super().delete(*args, **kwargs)
     
     def __str__(self) -> str:
