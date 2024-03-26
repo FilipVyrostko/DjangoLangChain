@@ -11,7 +11,10 @@ jobs:
 
     env:
       # Add random django secret key
-      DJANGO_SECRET_KEY: fl5doj2_7_$%b+l#cm)jrs^3$0d+iileem2yegjxv@)-gld$kw 
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      PINCERY_API_KEY: ${{ secrets.PINCEY_API_KEY }}
+      PINECONE_INDEX: ${{ secrets.PINECONE_INDEX }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
