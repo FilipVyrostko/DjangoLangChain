@@ -3,6 +3,9 @@ from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from .retriever import get_retriever
 from langchain import hub
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def build_chat(pdf_id):

@@ -1,9 +1,12 @@
+import os
 from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from ..embeddings.embeddings import openai_embeddings
-import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 pinecone = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
