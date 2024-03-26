@@ -11,18 +11,32 @@ pinecone_index = pinecone.Index(os.environ["PINECONE_INDEX"])
 vector_store = PineconeVectorStore(index=pinecone_index, embedding=openai_embeddings)
 
 def add_documents_from_pdf(pdf_path, pdf_id):
+    """
+    Add documents from PDF to Pinecone vector store.
+
+    Args:
+        pdf_path (str): Path to PDF file.
+        pdf_id (UUID): ID of PDF file.
+
+    Returns:
+        List of Pinecone document IDs for added documents.
+    """
     docs = PyPDFLoader(pdf_path).load_and_split(
         RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=1000,
             chunk_overlap=0,
         )
     )
+
+    # Add metadata to each document
     for doc in docs:
         doc.metadata = {
-            "page": doc.metadata["page"],
-            "text": doc.page_content,
-            "pdf_id": pdf_id.__str__()  # need to convert UUID to string
+            "page": doc.metadata["page"],  # page number
+            "text": doc.page_content,  # page content
+            "pdf_id": pdf_id.__str__()  # PDF file ID (as string)
         }
+
+    # Add documents to Pinecone vector store
     return vector_store.add_documents(docs)
 
 

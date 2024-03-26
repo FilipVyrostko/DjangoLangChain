@@ -1,3 +1,6 @@
+import uuid
+import validators 
+import pdfkit 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -7,7 +10,6 @@ from .forms import LinkUploadForm, QueryForm
 from .chat.pinecone.vector_store import add_documents_from_pdf
 from .models import PdfFile
 from .chat.model.chat import build_chat
-import validators, pdfkit, uuid
 
 
 def index(request):
@@ -144,62 +146,68 @@ def upload_link(request):
     """
     View function for handling link upload form.
 
-    If the request method is GET, then render the upload_link.html template
-    with an empty form.
+    If the request method is GET, render the upload_link.html template with
+    an empty form.
 
-    If the request method is POST, then handle the form data.
+    If the request method is POST, handle the form data.
     """
+    # If request method is GET, render form with empty fields
     if request.method == "GET":
-        return render(request=request, 
+        return render(request=request,
                       template_name='upload_link.html',
                       context={'form': LinkUploadForm()})
-    
+
+    # If request method is POST, handle form data
     if request.method == "POST":
         form = LinkUploadForm(request.POST)
-        """
-        Handle form data if form is valid.
 
-        If the URL is valid, then convert the URL to a PDF, save the PDF to
-        disk, add the PDF document to Pinecone, and save the PDF entry to the
-        Django db.
-
-        If the URL is invalid, then render the upload_link.html template with
-        an error message.
-        """
+        # If form is valid, proceed with handling the link
         if form.is_valid():
+
+            # If URL is valid, proceed with generating PDF and adding to Pinecone
             if validators.url(form.cleaned_data['url']):
+
+                # Generate PDF from URL
                 pdf_id = uuid.uuid4()
                 pdfkit.from_url(form.cleaned_data['url'], f"pdfs/{pdf_id}.pdf")
+
                 # Add document to Pinecone
                 pinecone_id_list = add_documents_from_pdf(
                     pdf_path=f"pdfs/{pdf_id}.pdf",
                     pdf_id=pdf_id
                 )
-                
-                if not pinecone_id_list:
-                    return render(request=request, 
+
+                # If Pinecone document addition was successful, add document to Django db
+                if pinecone_id_list:
+
+                    # Add document to Django db
+                    pdf_file = PdfFile.objects.create(
+                        user=request.user,
+                        pdf_id=pdf_id,
+                        pinecone_id_list=pinecone_id_list
+                    )
+                    pdf_file.save()
+
+                # If Pinecone document addition failed, render form with error
+                else:
+                    return render(request=request,
                                   template_name='upload_link.html',
-                                  context={'form': form, 'error': 'Failed to add document to Pinecone'})
-                
-                
-                # Add document to Django db
-                pdf_file = PdfFile.objects.create(
-                    user=request.user,
-                    pdf_id=pdf_id,
-                    pinecone_id_list = pinecone_id_list
-                )
-                pdf_file.save()
-                
+                                  context={'form': form,
+                                          'error': 'Failed to add document to Pinecone'})
+
+            # If URL is invalid, render form with error
             else:
-                return render(request=request, 
+                return render(request=request,
                               template_name='upload_link.html',
                               context={'form': form, 'error': 'Invalid URL'})
-            
+
+        # If form is invalid, render form with errors
         else:
-            return render(request=request, 
+            return render(request=request,
                           template_name='upload_link.html',
                           context={'form': form, "errors": form.errors})
-        
+
+        # If everything is successful, redirect to index
         return redirect('index')
 
 @login_required
@@ -297,7 +305,3 @@ def chat_view(request):
                       context={"pdf_path": pdf_path, 
                                "form": form, 
                                "llm_response": llm_response})
-
-
-
-

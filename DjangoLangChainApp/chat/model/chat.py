@@ -6,6 +6,15 @@ from langchain import hub
 
 
 def build_chat(pdf_id):
+    """
+    Builds a chatbot using the specified PDF ID.
+
+    Parameters:
+        pdf_id (str): The ID of the PDF document to be used for chatbot training.
+
+    Returns:
+        RetrievalQAChatChain: The trained chatbot that can retrieve and answer questions based on the provided PDF document.
+    """
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
     llm = ChatOpenAI(streaming=True)
     retriever = get_retriever(pdf_id)
