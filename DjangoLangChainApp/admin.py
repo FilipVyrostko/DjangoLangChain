@@ -1,3 +1,4 @@
 from django.contrib import admin
+from DjangoLangChainApp.models import PdfFile
 
-# Register your models here.
+admin.register(PdfFile)

@@ -5,7 +5,7 @@
     {% if pdfs %}
         <ul>
         {% for pdf in pdfs %}
-            <li><a href="{% url "view_document"%}?pdf_id={{pdf.pdf_id}}"> View {{ pdf.pdf_id }} </a></li>
+            <li><a href="{% url "view_document" pdf_id=pdf.pdf_id %}"> View {{ pdf.pdf_id }} </a></li>
         {% endfor %}
         </ul>
     {% else %}

@@ -25,4 +25,12 @@ def add_documents_from_pdf(pdf_path, pdf_id):
         }
     return vector_store.add_documents(docs)
 
+def get_retriever(pdf_id):
+    return vector_store.as_retriever(
+        search_kwargs = {
+            "filter": {"pdf_id": pdf_id.__str__()}
+        }
+    )
+
+
 

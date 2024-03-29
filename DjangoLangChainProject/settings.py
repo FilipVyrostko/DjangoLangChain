@@ -31,6 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+NOSE_ARGS = ['--nocapture',
+             '--nologcapture',]
+
 #CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Application definition

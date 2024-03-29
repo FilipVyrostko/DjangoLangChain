@@ -1,7 +1,7 @@
-from langchain.chat_models.openai import ChatOpenAI
+from langchain_openai.chat_models import ChatOpenAI
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from .retriever import get_retriever
+from ..pinecone.vector_store import get_retriever
 from langchain import hub
 
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.db.utils import IntegrityError
@@ -7,6 +7,7 @@ from .forms import LinkUploadForm, QueryForm
 from .chat.pinecone.vector_store import add_documents_from_pdf
 from .models import PdfFile
 from .chat.model.chat import build_chat
+from pinecone import PineconeApiException
 import validators, pdfkit, uuid
 
 
@@ -139,6 +140,7 @@ def user_logout(requset):
     # Redirect the user to the index page after logging them out
     return render(requset, template_name='index.html')
 
+
 @login_required
 def upload_link(request):
     """
@@ -179,7 +181,8 @@ def upload_link(request):
                 if not pinecone_id_list:
                     return render(request=request, 
                                   template_name='upload_link.html',
-                                  context={'form': form, 'error': 'Failed to add document to Pinecone'})
+                                  context={'form': form, 
+                                           'error': 'Failed to add document to Pinecone'})
                 
                 
                 # Add document to Django db
@@ -218,7 +221,7 @@ def list_documents(request):
 
 
 @login_required
-def view_document(request):
+def view_document(request, pdf_id):
     """View function for viewing a single PDF document.
 
     Retrieves the PDF document associated with the provided pdf_id parameter
@@ -230,15 +233,17 @@ def view_document(request):
     Returns:
         Rendered template with a single PDF document.
     """
-    pdf_id = request.GET.get('pdf_id')
-    pdf = PdfFile.objects.get(user=request.user, pdf_id=pdf_id)
-    return render(request,
-                  template_name='view_document.html',
-                  context={'pdf': pdf})
+    try:
+        pdf = PdfFile.objects.get(user=request.user, pdf_id=pdf_id)
+        return render(request,
+                      template_name='view_document.html',
+                      context={'pdf': pdf})
+    except PdfFile.DoesNotExist:
+        return HttpResponse('Document not found')
 
 
 @login_required
-def delete_document(request):
+def delete_document(request, pdf_id):
     """Delete the PDF document associated with the provided pdf_id.
 
     This view function deletes the PDF document associated with the
@@ -251,18 +256,26 @@ def delete_document(request):
     Returns:
         Redirect to the list of documents view.
     """
-    pdf_id = request.GET.get('pdf_id')
-    pdf = PdfFile.objects.get(user=request.user, pdf_id=pdf_id)
+    try:
+        pdf = PdfFile.objects.get(user=request.user, pdf_id=pdf_id)
 
-    # Delete the PDF document from the Django db and file system
-    pdf.delete()
+        # Delete the PDF document from the Django db and file system
+        pdf.delete()    
 
-    # Redirect the user to the list of documents view
-    return redirect('list_documents')
-
+        # Redirect the user to the list of documents view
+        return redirect('list_documents')
+    
+    except PdfFile.DoesNotExist:
+        return HttpResponse('Document not found')
+    
+    except PineconeApiException:
+            return HttpResponse('Failed to delete document from Pinecone')
+        
+    except FileNotFoundError:
+        return HttpResponse('Failed to delete document from file system')
 
 @login_required
-def chat_view(request):
+def chat_view(request, pdf_id):
     """View function for handling chat view GET and POST requests.
 
     If the request method is GET, then render the chat_view.html template
@@ -270,9 +283,12 @@ def chat_view(request):
 
     If the request method is POST, then handle the form data.
     """
+    pdf_path = f"pdfs/{pdf_id}.pdf"
+    
+    if not PdfFile.objects.filter(user=request.user, pdf_id=pdf_id).exists():
+        return HttpResponse("Document not found")
+    
     if request.method == "GET":
-        pdf_id = request.GET.get('pdf_id')
-        pdf_path = f"pdfs/{pdf_id}.pdf"
         
         return render(
             request, 
@@ -281,8 +297,6 @@ def chat_view(request):
 
     if request.method == "POST":
         form = QueryForm(request.POST)
-        pdf_id = request.GET.get('pdf_id')
-        pdf_path = f"pdfs/{pdf_id}.pdf"
 
         # Invoke the chat LLM and get the response
         llm_response = [request.POST.get('querry')]
